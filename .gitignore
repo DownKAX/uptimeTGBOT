@@ -1,0 +1,27 @@
+# Python
+__pycache__/*
+*__pycache__*
+*/__pycache__/*
+*$py.class
+*.so
+.DS_Store
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+celery_tasks.py
+
+# IDE
+.idea/
+.vscode/
+
+# Environments
+venv/
+
+# Logs
+*.log
+info.log
+
+#
+.env
+.env.test

@@ -1,0 +1,16 @@
+__pycache__/
+**/__pycache__/
+*/__pycache__/
+**/__pycache__
+*/__pycache__
+*/__pycache__/*
+.idea/
+.idea
+.idea/*
+venv
+*.pyc
+*.pyo
+.Python
+.pytest_cache
+.git/
+tests/conftest.py

@@ -2,6 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 import json
+from smtplib import SMTP_SSL
 
 from app.core.settings import settings
 from redis_client import get_sync_redis
@@ -12,13 +13,12 @@ class Email_sender:
         self.r = get_sync_redis()
         self.email = settings.EMAIL_ADDR_SMTP
         self.password = settings.EMAIL_PASS_SMTP
-        # self.server = smtplib.SMTP("smtp.mail.ru", 465)
 
-    def send_email(self, msg: dict):
+    def send_email(self, server: SMTP_SSL, msg: dict):
         email, msg = iter(msg.items()).__next__()
+        msg = MIMEText(msg)
         try:
-            print(msg)
-            # self.server.send_message(msg)
+            server.send_message(msg=msg, to_addrs=email, from_addr=self.email)
         except Exception as e:
             print(f'Email sending failed: {e}')
 
@@ -30,7 +30,9 @@ class Email_sender:
                 continue
             else:
                 msg = json.loads(msg[1])
-                self.send_email(msg)
+                with smtplib.SMTP_SSL("smtp.mail.ru", 465) as server:
+                    server.login(self.email, self.password)
+                    self.send_email(server, msg)
 
-email_worker = Email_sender()
-email_worker.worker()
+# email_worker = Email_sender()
+# email_worker.worker()

@@ -13,7 +13,7 @@ class UserService:
         self.uow = uow
 
     async def add_one_user(self, data: User) -> User:
-        data = data.model_dump()
+        data = data.model_dump(exclude_none=True)
         async with self.uow:
             result = await unique_validation(self.uow.user_model.add_one, data,
                                        e_message="Some data is not unique, try something else")
@@ -21,14 +21,14 @@ class UserService:
             await self.uow.commit()
             return result
 
-    async def select_one_user(self, return_value: None | str = None, **filters) -> User | None:
+    async def select_one_user(self, return_value: None | str = None, **filters) -> User | Any:
         if filters.get('password'):
             raise HTTPException(status_code=401, detail="Forbidden filter")
 
         async with self.uow:
             result = await exists_validation(self.uow.user_model.find_one, e_message="User does not exist", **filters)
             result: User = User.model_validate(result.__dict__)
-            return result if not return_value else [getattr(x, return_value) for x in result]
+            return result if not return_value else getattr(result, return_value)
 
     async def select_all_users(self, return_value: str | None = None) -> list[User] | list[Any]:
         async with self.uow:

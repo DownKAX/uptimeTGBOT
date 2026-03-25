@@ -20,7 +20,8 @@ class Urls(Base):
   time_added_seconds: Mapped[int] = mapped_column(unique=False, nullable=False)
   used_by_counter: Mapped[int] = mapped_column(unique=False, nullable=False)
 
-class users_urls(Urls):
+class UsersUrls(Base):
   __tablename__ = 'users_urls'
+  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
   user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=False)
-  url: Mapped[str] = mapped_column(ForeignKey('urls.id', ondelete='CASCADE'), unique=False, nullable=False)
+  url_id: Mapped[str] = mapped_column(ForeignKey('urls.id', ondelete='CASCADE'), unique=False, nullable=False)

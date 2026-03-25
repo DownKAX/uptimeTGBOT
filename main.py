@@ -7,6 +7,8 @@ from app.api.endpoints.user_endpoints import user_router
 from app.auth.register import auth
 from app.middleware.middleware import logging_middleware
 from redis_client import get_sync_redis
+from app.utils.HttpxClientWorker import entity
+from app.utils.Email_worker import Email_sender
 
 app = FastAPI()
 app.include_router(user_router)
@@ -19,6 +21,10 @@ def main():
 def bot_main():
     from app.telegram_bot.bot import main
     asyncio.run(main())
+
+def email_worker_main():
+    email_worker = Email_sender()
+    email_worker.worker()
 
 async def fill_db():
     from app.services.urls_service import UrlService
@@ -35,12 +41,10 @@ async def fill_db():
 
 if __name__ == "__main__":
     r = get_sync_redis()
-    from app.utils.HttpxClientWorker import entity
+
 
     # entity.start_workers()
 
     multiprocessing.Process(target=main).start()
-
-    # multiprocessing.Process(target=email_worker.worker).start()
+    multiprocessing.Process(target=email_worker_main).start()
     multiprocessing.Process(target=bot_main).start()
-    from app.utils.Email_worker import email_worker

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, update
+from sqlalchemy import select, delete, update, and_
 from sqlalchemy.dialects.postgresql import insert
 from app.api.models.users import Url
 
@@ -25,6 +25,7 @@ class AbstractRepository(ABC):
     async def update_one(self, column_and_value: ColumnValue, values_to_update: dict):
         ...
 
+
 class Repository(AbstractRepository):
     model = None
 
@@ -40,10 +41,11 @@ class Repository(AbstractRepository):
         result = await self.session.execute(query)
         return result.scalar_one()
 
-    async def add_many_urls(self, data: list, conflict: dict | None = None):
+    async def add_many(self, data: list, conflict: dict | None = None):
         query = insert(self.model).values(data)
         if conflict:
-            query = query.on_conflict_do_update(**conflict).returning(self.model)
+            query = query.on_conflict_do_update(**conflict)
+        query = query.returning(self.model)
         result = await self.session.execute(query)
         return result.scalars().all()
 
@@ -61,6 +63,13 @@ class Repository(AbstractRepository):
         query = delete(self.model).where(self.model.id == id).returning(self.model)
         result = await self.session.execute(query)
         return result.scalar_one()
+
+    async def delete_by_data(self, data: dict):
+        query = delete(self.model).where(
+            *(getattr(self.model, k) == v for k, v in data.items())).returning(self.model)
+        result = await self.session.execute(query)
+        return result.scalar_one()
+
 
     async def update_one(self, column_and_value: ColumnValue, values: dict):
         column = getattr(self.model, column_and_value.column_name)

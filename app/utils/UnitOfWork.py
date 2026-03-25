@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from app.database.db import get_session_maker
 
 # Строка с импортом ниже служит примером. Там следует хранить свои репозитории
-from app.repositories.project_repository import UserRepository, UrlsRepository
+from app.repositories.project_repository import UserRepository, UrlsRepository, UserUrlRepository
 
 
 class AbstractUow(ABC):
@@ -38,6 +38,7 @@ class Uow(AbstractUow):
         # Все репозитории должны быть в одном UnitOfWork и определены в этом методе следующим образом:
         self.user_model = UserRepository(self.session)
         self.urls_model = UrlsRepository(self.session)
+        self.user_url_model = UserUrlRepository(self.session)
 
         return self
 

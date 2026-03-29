@@ -12,23 +12,27 @@ from app.database.models import Urls
 from app.services.dependencies.validators import unique_validation, exists_validation, exists_validation_none
 from dns.asyncresolver import Resolver
 from urllib.parse import urlparse
+from redis_client import get_async_redis
 
 class UrlService:
     def __init__(self, uow: Uow):
         self.uow = uow
 
     async def add_one_url(self, data: Url) -> Url:
-        data = data.model_dump(exclude_none=True)
+        r = await get_async_redis()
+        data_m = data.model_dump(exclude_none=True)
         # data['url'] = await self.url_to_ip(data['url'])
         async with self.uow:
-            result = await unique_validation(self.uow.urls_model.add_one, data,
+            result = await unique_validation(self.uow.urls_model.add_one, data_m,
                                        e_message="Some data is not unique, try something else")
             result: Url = Url.model_validate(result.__dict__)
             await self.uow.commit()
-            return result
+        await r.lpush('urls', data.url)
+        return result
 
     async def add_many_urls(self, data: list[Url]) -> list[Url]:
-        """Добавляет ссылку в БД, при конфликте(есть такая же запись) увеличивает счётчик, который отражает количество следящих пользователей"""
+        r = await get_async_redis()
+        """Добавляет ссылку в БД. При конфликте(есть такая же запись) увеличивает счётчик, который отражает количество следящих пользователей"""
         data_to_write = [x.model_dump(exclude_none=True) for x in data]
 
         async with self.uow:
@@ -37,6 +41,10 @@ class UrlService:
             results = [Url.model_validate(x.__dict__) for x in result]
 
             await self.uow.commit()
+
+        # Добавляем на проверку, чтобы пользователь сразу получил данные
+        for x in data:
+            await r.lpush('urls', x.url)
         return results
 
     async def select_one_url(self, return_value: None | str = None, **filters) -> Url | None:
@@ -66,6 +74,13 @@ class UrlService:
         async with self.uow:
             result = await unique_validation(self.uow.urls_model.update_one, column_and_value, values,
                                              e_message="Some data is not unique, try something else")
+            result: Url = Url.model_validate(result.__dict__)
+            await self.uow.commit()
+            return result
+
+    async def delete_one_url(self, **data) -> Url:
+        async with self.uow:
+            result = await exists_validation(self.uow.urls_model.delete_by_data, data)
             result: Url = Url.model_validate(result.__dict__)
             await self.uow.commit()
             return result

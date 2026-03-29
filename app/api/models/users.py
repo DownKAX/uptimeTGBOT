@@ -22,3 +22,7 @@ class UserUrl(BaseModel):
     user_id: int
     url_id: int
 
+class JoinedUserUrl(BaseModel):
+    user_id: int
+    url_id: int
+    url: str

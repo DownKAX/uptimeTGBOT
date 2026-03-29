@@ -8,6 +8,7 @@ from typing import Annotated
 from aiogram.types import TelegramObject
 from aiogram_dependency import Depends, Scope
 
+from app.api.models.users import UserUrl
 from app.services.user_service import UserService
 from app.services.urls_service import UrlService
 from app.services.user_url_service import UserUrlService
@@ -53,3 +54,11 @@ async def check_url(url, user_id: int) -> str | int | None:
         return 'repeated'
 
     return url_id
+
+async def check_access_to_url(callback, url_id) -> UserUrl | None:
+    user_url_service = await get_user_url_service()
+    user_service = await get_user_service()
+
+    user_id = await user_service.select_one_user(return_value='id', telegram_id=callback.from_user.id)
+    record = await user_url_service.select_one_record(user_id=user_id, url_id=url_id)
+    return record

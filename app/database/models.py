@@ -25,3 +25,76 @@ class UsersUrls(Base):
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
   user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=False)
   url_id: Mapped[str] = mapped_column(ForeignKey('urls.id', ondelete='CASCADE'), unique=False, nullable=False)
+
+class Incidents(Base):
+    __tablename__ = 'incidents'
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    url_id: Mapped[int] = mapped_column(ForeignKey('urls.id', ondelete='CASCADE'), nullable=False, unique=True)
+    started_at: Mapped[datetime] = mapped_column(unique=False, nullable=False)
+    ended_at:  Mapped[datetime] = mapped_column(unique=False, nullable=True)
+    duration: Mapped[int] = mapped_column(unique=False, nullable=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

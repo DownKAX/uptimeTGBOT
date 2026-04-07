@@ -1,6 +1,8 @@
 import threading
 import httpx
+import json
 
+from app.api.models.users import Url
 from redis_client import get_sync_redis
 
 
@@ -36,37 +38,48 @@ class ClientWorker:
                 continue
             else:
                 _, url = url
+                url = Url(**json.loads(url))
 
             try:
-                client.head(url)
+                a = client.head(url.url)
+                if url.status == 'DOWN':
+                    self.r.rpush('tg_messages', json.dumps((url.url, None, "UP")))
+
                 with self.lock:
                     self.stats['success'] += 1
 
-            except httpx.ReadTimeout:
+            except httpx.ReadTimeout as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['read_timeout'] += 1
 
-            except httpx.ReadError:
+            except httpx.ReadError as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['read_error'] += 1
 
-            except httpx.ConnectError:
+            except httpx.ConnectError as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['connect_error'] += 1
 
-            except httpx.ConnectTimeout:
+            except httpx.ConnectTimeout as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['connect_timeout'] += 1
 
-            except httpx.PoolTimeout:
+            except httpx.PoolTimeout as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['pool_timeout'] += 1
 
-            except httpx.RemoteProtocolError:
+            except httpx.RemoteProtocolError as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['remote_protocol'] += 1
 
-            except httpx.TooManyRedirects:
+            except httpx.TooManyRedirects as e:
+                if url.status == 'UP': self.r.rpush('tg_messages', json.dumps((str(e.request.url), str(e), "DOWN")))
                 with self.lock:
                     self.stats['pool_timeout'] += 1
 

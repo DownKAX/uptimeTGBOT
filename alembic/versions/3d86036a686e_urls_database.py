@@ -26,6 +26,7 @@ def upgrade() -> None:
     sa.Column('url', sa.String(), nullable=False),
     sa.Column('time_added_seconds', sa.Integer(), nullable=False),
     sa.Column('used_by_counter', sa.Integer(), nullable=False),
+    sa.Column('status', sa.String(), nullable=False, unique=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('url')
     )

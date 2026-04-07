@@ -2,18 +2,20 @@ import asyncio
 import uvicorn
 import multiprocessing
 from fastapi import FastAPI
-#
+
 from app.api.endpoints.user_endpoints import user_router
+from app.api.models.users import Url
 from app.auth.register import auth
 from app.middleware.middleware import logging_middleware
 from redis_client import get_sync_redis
-from app.utils.HttpxClientWorker import entity
+
 from app.utils.Email_worker import Email_sender
 
 app = FastAPI()
 app.include_router(user_router)
 app.include_router(auth)
 app.middleware('http')(logging_middleware)
+
 
 def main():
     uvicorn.run(app, host="0.0.0.0", port=8000)
@@ -25,6 +27,10 @@ def bot_main():
 def email_worker_main():
     email_worker = Email_sender()
     email_worker.worker()
+
+def worker_main():
+    from app.utils.HttpxClientWorker import entity
+    entity.start_workers()
 
 async def fill_db():
     from app.services.urls_service import UrlService
@@ -40,11 +46,66 @@ async def fill_db():
 
 
 if __name__ == "__main__":
+    hosts = [
+    "https://google.com",
+    "https://youtube.com",
+    "https://facebook.com",
+    "https://twitter.com",
+    "https://instagram.com",
+    "https://wikipedia.org",
+    "https://amazon.com",
+    "https://reddit.com",
+    "https://yahoo.com",
+    "https://bing.com",
+    "https://netflix.com",
+    "https://linkedin.com",
+    "https://office.com",
+    "https://live.com",
+    "https://microsoft.com",
+    "https://apple.com",
+    "https://github.com",
+    "https://stackoverflow.com",
+    "https://vk.com",
+    "https://ok.ru",
+    "https://twitch.tv",
+    "https://paypal.com",
+    "https://imdb.com",
+    "https://pinterest.com",
+    "https://cnn.com",
+    "https://bbc.com",
+    "https://nytimes.com",
+    "https://forbes.com",
+    "https://weather.com",
+    "https://dropbox.com",
+    "https://cloudflare.com",
+    "https://digitalocean.com",
+    "https://heroku.com",
+    "https://openai.com",
+    "https://duckduckgo.com",
+    "https://zoom.us",
+    "https://slack.com",
+    "https://trello.com",
+    "https://notion.so",
+    "https://figma.com",
+    "https://canva.com",
+    "https://quora.com",
+    "https://medium.com",
+    "https://archive.org",
+    "https://yandex.ru",
+    "https://mail.ru",
+    "https://aliexpress.com",
+    "https://ebay.com",
+    "https://booking.com",
+    "https://airbnb.com",
+    "https://chotasaie.com"
+]
+    import json
+    hosts = [json.dumps(Url(url=x).__dict__) for x in hosts]
     r = get_sync_redis()
-
-
-    # entity.start_workers()
+    for url in hosts:
+        r.lpush('urls', url)
 
     multiprocessing.Process(target=main).start()
     multiprocessing.Process(target=email_worker_main).start()
     multiprocessing.Process(target=bot_main).start()
+    multiprocessing.Process(target=worker_main())

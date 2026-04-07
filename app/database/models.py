@@ -19,6 +19,7 @@ class Urls(Base):
   url: Mapped[str] = mapped_column(unique=True, nullable=False)
   time_added_seconds: Mapped[int] = mapped_column(unique=False, nullable=False)
   used_by_counter: Mapped[int] = mapped_column(unique=False, nullable=False)
+  status: Mapped[str] = mapped_column(unique=False, nullable=False)
 
 class UsersUrls(Base):
   __tablename__ = 'users_urls'

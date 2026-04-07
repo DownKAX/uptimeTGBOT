@@ -21,7 +21,6 @@ class UrlService:
     async def add_one_url(self, data: Url) -> Url:
         r = await get_async_redis()
         data_m = data.model_dump(exclude_none=True)
-        # data['url'] = await self.url_to_ip(data['url'])
         async with self.uow:
             result = await unique_validation(self.uow.urls_model.add_one, data_m,
                                        e_message="Some data is not unique, try something else")

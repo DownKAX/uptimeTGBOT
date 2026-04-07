@@ -17,6 +17,7 @@ class Url(BaseModel):
     url: str
     time_added_seconds: int = Field(default_factory=lambda: random.randint(0, 59))#Field(default_factory=lambda: datetime.now().second)
     used_by_counter: int = 1
+    status: str = "UP"
 
 class UserUrl(BaseModel):
     user_id: int

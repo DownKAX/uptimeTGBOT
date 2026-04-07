@@ -62,3 +62,11 @@ async def check_access_to_url(callback, url_id) -> UserUrl | None:
     user_id = await user_service.select_one_user(return_value='id', telegram_id=callback.from_user.id)
     record = await user_url_service.select_one_record(user_id=user_id, url_id=url_id)
     return record
+
+async def prepare_message_to_send(url, cause, status) -> (list[int], str):
+    url_service = await get_url_service()
+    user_url_service = await get_user_url_service()
+    message = f'{url} {'недоступен' if status == "DOWN" else 'снова доступен'}{f"\nПричина {cause}" if cause else ""}'
+    url_id = await url_service.select_one_url(return_value='id', url=url)
+    user_ids = await user_url_service.select_all_records(return_value='user_id', url_id=url_id)
+    return user_ids, message

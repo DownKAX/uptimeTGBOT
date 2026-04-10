@@ -102,8 +102,8 @@ if __name__ == "__main__":
     import json
     hosts = [json.dumps(Url(url=x).__dict__) for x in hosts]
     r = get_sync_redis()
-    for url in hosts:
-        r.lpush('urls', url)
+    # for url in hosts:
+    #     r.lpush('urls', url)
 
     multiprocessing.Process(target=main).start()
     multiprocessing.Process(target=email_worker_main).start()

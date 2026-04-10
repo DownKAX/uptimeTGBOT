@@ -14,6 +14,7 @@ bot = Bot(settings.TELEGRAM_API)
 async def send_newsletter_message(tg_bot=bot):
     r = await get_async_redis()
     while True:
+        # pushing in HttpxClientWorker.py
         message = await r.blpop('tg_messages')
         if message is None:
             continue
@@ -21,9 +22,10 @@ async def send_newsletter_message(tg_bot=bot):
         message = json.loads(message)
         user_id, message = await prepare_message_to_send(url=message[0], cause=message[1], status=message[2])
         print(user_id, message)
-# Тестировать
-        # await tg_bot.send_message(user_id, message)
-        # await asyncio.sleep(0.3)
+        for id in user_id:
+            await tg_bot.send_message(id, message, disable_web_page_preview=True)
+            await asyncio.sleep(0.3)
+
 async def bot_start():
     dp = Dispatcher()
     register_handlers(dp)

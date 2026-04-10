@@ -7,6 +7,8 @@ from app.repositories.models import ColumnValue
 
 user_router = APIRouter(prefix='/user')
 
+# Убрать или исправить(добавить права доступа)
+
 @user_router.post('/create_data')
 async def create_user(user_service: user_dependency, user: User):
     added_data = await user_service.add_one_user(user)

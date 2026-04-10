@@ -38,10 +38,14 @@ class ClientWorker:
                 continue
             else:
                 _, url = url
+                print(url)
                 url = Url(**json.loads(url))
 
             try:
                 a = client.head(url.url)
+                print(a)
+                print(url.status)
+                print(type(url.status))
                 if url.status == 'DOWN':
                     self.r.rpush('tg_messages', json.dumps((url.url, None, "UP")))
 

@@ -1,4 +1,5 @@
 from urllib.parse import urlparse
+from sqlalchemy import text
 
 from fastapi.exceptions import HTTPException
 
@@ -13,6 +14,7 @@ from app.services.user_service import UserService
 from app.services.urls_service import UrlService
 from app.services.user_url_service import UserUrlService
 from app.utils.UnitOfWork import Uow, AbstractUow
+from app.database.db import get_session
 
 async def get_url_service(uow: AbstractUow = Uow()):
     return UrlService(uow)
@@ -56,6 +58,7 @@ async def check_url(url, user_id: int) -> str | int | None:
     return url_id
 
 async def check_access_to_url(callback, url_id) -> UserUrl | None:
+
     user_url_service = await get_user_url_service()
     user_service = await get_user_service()
 
@@ -69,4 +72,8 @@ async def prepare_message_to_send(url, cause, status) -> (list[int], str):
     message = f'{url} {'недоступен' if status == "DOWN" else 'снова доступен'}{f"\nПричина {cause}" if cause else ""}'
     url_id = await url_service.select_one_url(return_value='id', url=url)
     user_ids = await user_url_service.select_all_records(return_value='user_id', url_id=url_id)
-    return user_ids, message
+    print(user_ids)
+    async for session in get_session():
+        result = await session.execute(text("""SELECT telegram_id FROM users WHERE id = ANY(:ids)"""), {"ids": user_ids})
+        user_tg_ids = result.scalars().all()
+    return user_tg_ids, message

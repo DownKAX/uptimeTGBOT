@@ -1,3 +1,4 @@
+import json
 from sqlite3 import IntegrityError
 from typing import Any, Iterable
 
@@ -26,7 +27,10 @@ class UrlService:
                                        e_message="Some data is not unique, try something else")
             result: Url = Url.model_validate(result.__dict__)
             await self.uow.commit()
-        await r.lpush('urls', data.url)
+
+        # Добавляем на проверку, чтобы пользователь сразу получил данные
+        for_redis = json.dumps(result.__dict__)
+        await r.lpush('urls', for_redis)
         return result
 
     async def add_many_urls(self, data: list[Url]) -> list[Url]:
@@ -42,8 +46,9 @@ class UrlService:
             await self.uow.commit()
 
         # Добавляем на проверку, чтобы пользователь сразу получил данные
-        for x in data:
-            await r.lpush('urls', x.url)
+        for_redis = [json.dumps(x.__dict__) for x in results]
+        for x in for_redis:
+            await r.lpush('urls', x)
         return results
 
     async def select_one_url(self, return_value: None | str = None, **filters) -> Url | None:

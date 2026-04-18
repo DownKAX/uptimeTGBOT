@@ -78,24 +78,3 @@ class Incidents(Base):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

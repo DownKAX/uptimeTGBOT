@@ -5,7 +5,7 @@ from aiogram_dependency import setup_dependency
 from aiogram import Bot, Dispatcher
 
 from app.core.settings import settings
-from app.telegram_bot.handlers.dependencies import prepare_message_to_send
+from app.telegram_bot.handlers.dependencies import handle_message
 from app.telegram_bot.handlers.handler_registration import register_handlers
 from redis_client import get_async_redis
 
@@ -20,8 +20,7 @@ async def send_newsletter_message(tg_bot=bot):
             continue
         _, message = message
         message = json.loads(message)
-        user_id, message = await prepare_message_to_send(url=message[0], cause=message[1], status=message[2])
-        print(user_id, message)
+        user_id, message = await handle_message(url=message[0], cause=message[1], status=message[2])
         for id in user_id:
             await tg_bot.send_message(id, message, disable_web_page_preview=True)
             await asyncio.sleep(0.3)

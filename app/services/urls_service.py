@@ -1,10 +1,5 @@
 import json
-from sqlite3 import IntegrityError
-from typing import Any, Iterable
-
-import fastapi
-from fastapi import HTTPException
-from sqlalchemy import select
+from typing import Any
 
 from app.repositories.models import ColumnValue
 from app.utils.UnitOfWork import Uow

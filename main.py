@@ -7,6 +7,7 @@ from app.api.endpoints.user_endpoints import user_router
 from app.api.models.users import Url
 from app.auth.register import auth
 from app.middleware.middleware import logging_middleware
+
 from redis_client import get_sync_redis
 
 from app.utils.Email_worker import Email_sender
@@ -43,7 +44,6 @@ async def fill_db():
     uow = Uow()
     url_serv = UrlService(uow)
     await url_serv.add_many_urls(hosts)
-
 
 if __name__ == "__main__":
     hosts = [

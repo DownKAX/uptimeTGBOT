@@ -38,12 +38,11 @@ class ClientWorker:
                 continue
             else:
                 _, url = url
-                print(url)
                 url = Url(**json.loads(url))
 
             try:
-                a = client.head(url.url)
-                if url.status == 'DOWN':
+                a = client.head(url.url) # Делаем запрос, который может выбросить исключения ниже
+                if url.status == 'DOWN': # Данные берутся из бд, где указан их текущий статус, если получили ответ от сервера, когда он был DOWN, то значит он ожил
                     self.r.rpush('tg_messages', json.dumps((url.url, None, "UP")))
 
                 with self.lock:

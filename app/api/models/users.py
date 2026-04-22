@@ -31,6 +31,6 @@ class JoinedUserUrl(BaseModel):
 class IncidentData(BaseModel):
     id: int | None = None
     url_id: int
-    started_at: datetime = Field(default_factory=lambda: datetime.now())
+    started_at: datetime | None = Field(default_factory=lambda: datetime.now())
     ended_at: datetime | None = None
     duration: int | None = None

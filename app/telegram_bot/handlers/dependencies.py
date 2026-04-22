@@ -9,12 +9,14 @@ from typing import Annotated
 from aiogram.types import TelegramObject
 from aiogram_dependency import Depends, Scope
 
-from app.api.models.users import UserUrl
+from app.api.models.users import UserUrl, IncidentData
+from app.repositories.models import ColumnValue
 from app.services.user_service import UserService
 from app.services.urls_service import UrlService
 from app.services.user_url_service import UserUrlService
 from app.utils.UnitOfWork import Uow, AbstractUow
 from app.database.db import get_session
+from app.services.incidents_service import IncidentService
 
 async def get_url_service(uow: AbstractUow = Uow()):
     return UrlService(uow)
@@ -24,6 +26,9 @@ async def get_user_service(uow: AbstractUow = Uow()):
 
 async def get_user_url_service(uow: AbstractUow = Uow()):
     return UserUrlService(uow)
+
+async def get_incident_service(uow: AbstractUow = Uow()):
+    return IncidentService(uow)
 
 url_dependency = Annotated[UrlService, Depends(get_url_service, scope=Scope.TRANSIENT)]
 user_dependency = Annotated[UserService, Depends(get_user_service, scope=Scope.TRANSIENT)]
@@ -79,14 +84,24 @@ async def handle_message(url: str, cause: str, status: str) -> (list[int], str):
         user_tg_ids = result.scalars().all()
 
     if status == "DOWN":
-        await start_incident(url)
+        await start_incident(url_id)
     else:
-        await end_incident(url)
-
+        await end_incident(url_id)
     return user_tg_ids, message
 
-async def start_incident(url: str):
-    pass
+async def start_incident(url_id: int):
+    incident_service = await get_incident_service()
+    url_service = await get_url_service()
 
-async def end_incident(url: str):
-    pass
+    await incident_service.add_incident(IncidentData(url_id=url_id))
+    await url_service.update_one_url(column_and_value=ColumnValue(column_name='id', column_value=url_id),
+                                     values={'status': 'DOWN'})
+
+
+async def end_incident(url_id: int):
+    incident_service = await get_incident_service()
+    url_service = await get_url_service()
+
+    await incident_service.end_incident(url_id=url_id)
+    await url_service.update_one_url(column_and_value=ColumnValue(column_name='id', column_value=url_id),
+                                     values={'status': 'UP'})

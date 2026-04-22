@@ -28,4 +28,3 @@ class IncidentService:
             await self.uow.commit()
 
 
-

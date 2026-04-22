@@ -6,6 +6,8 @@ from alembic.config import Config
 from main import app
 import asyncio
 
+# Переделать под новую аутентификацию
+
 @pytest_asyncio.fixture(name='client')
 async def async_client():
     async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as client:

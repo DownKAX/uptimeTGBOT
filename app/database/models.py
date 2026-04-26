@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, declarative_base
 from datetime import datetime
 
@@ -10,7 +10,7 @@ class Users(Base):
   username: Mapped[str] = mapped_column(unique=True, nullable=False)
   password: Mapped[str] = mapped_column(unique=False, nullable=False)
   email: Mapped[str] = mapped_column(unique=True, nullable=False)
-  telegram_id: Mapped[int] = mapped_column(unique=True, nullable=False)
+  telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
   register_time: Mapped[datetime] = mapped_column(unique=False, nullable=False)
 
 class Urls(Base):

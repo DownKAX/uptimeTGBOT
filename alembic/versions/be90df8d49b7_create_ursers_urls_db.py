@@ -26,7 +26,8 @@ sa.Column('id', sa.Integer(), autoincrement=True, nullable=False, primary_key=Tr
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('url_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['url_id'], ['urls.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE')
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+                    if_not_exists=True
     )
     # ### end Alembic commands ###
 

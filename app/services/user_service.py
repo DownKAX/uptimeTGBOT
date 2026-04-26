@@ -6,7 +6,8 @@ from sqlalchemy import select
 from app.repositories.models import ColumnValue
 from app.utils.UnitOfWork import Uow
 from app.api.models.users import User
-from app.services.dependencies.validators import unique_validation, exists_validation
+from app.services.dependencies.validators import unique_validation, exists_validation, exists_validation_none
+
 
 class UserService:
     def __init__(self, uow: Uow):
@@ -21,14 +22,16 @@ class UserService:
             await self.uow.commit()
             return result
 
-    async def select_one_user(self, return_value: None | str = None, **filters) -> User | Any:
+    async def select_one_user(self, return_value: None | str = None, none_on_exception=False, **filters) -> User | Any:
+        validator = exists_validation_none if none_on_exception else exists_validation
         if filters.get('password'):
             raise HTTPException(status_code=401, detail="Forbidden filter")
 
         async with self.uow:
-            result = await exists_validation(self.uow.user_model.find_one, e_message="User does not exist", **filters)
-            result: User = User.model_validate(result.__dict__)
-            return result if not return_value else getattr(result, return_value)
+            result = await validator(self.uow.user_model.find_one, e_message="User does not exist", **filters)
+            if result:
+                result: User = User.model_validate(result.__dict__)
+                return result if not return_value else getattr(result, return_value)
 
     async def select_all_users(self, return_value: str | None = None) -> list[User] | list[Any]:
         async with self.uow:

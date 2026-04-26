@@ -28,8 +28,8 @@ def upgrade() -> None:
     sa.Column('used_by_counter', sa.Integer(), nullable=False),
     sa.Column('status', sa.String(), nullable=False, unique=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('url')
-    )
+    sa.UniqueConstraint('url'),
+    if_not_exists=True)
     # ### end Alembic commands ###
 
 

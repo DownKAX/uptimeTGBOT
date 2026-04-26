@@ -17,7 +17,11 @@ from redis_client import get_async_redis
 auth = APIRouter(prefix="/auth")
 
 @auth.post('/signup')
-async def register(response: Response, credentials: RegistrationForm = Form(...)):
+async def register(user_service: user_dependency, response: Response, credentials: RegistrationForm = Form(...)):
+    username = await user_service.select_one_user(username=credentials.username, none_on_exception=True)
+    print(username)
+    if username is not None:
+        raise HTTPException(status_code=409, detail="Username already exists")
     password_bytes: bytes = credentials.password.encode('utf-8')
     hashed_password: bytes = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
     user_data = json.dumps({'username': credentials.username, 'password': hashed_password.decode(), 'telegram_id': credentials.telegram_id})
@@ -39,7 +43,7 @@ async def register(response: Response, credentials: RegistrationForm = Form(...)
     return {'detail': 'Code send to email'}
 
 @auth.post('/email_verification')
-async def check_email_code(user_service: user_dependency, request: Request,  email_code: str = Form(...)):
+async def check_email_code(user_service: user_dependency, request: Request, email_code: str = Form(...)):
     r = await get_async_redis()
     temp_id = request.cookies.get('temp_id')
     signup_data = await r.get(temp_id)

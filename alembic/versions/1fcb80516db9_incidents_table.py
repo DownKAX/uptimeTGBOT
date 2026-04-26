@@ -29,7 +29,8 @@ def upgrade() -> None:
     sa.Column('duration', sa.BigInteger(), nullable=True),
     sa.ForeignKeyConstraint(['url_id'], ['urls.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('url_id')
+    sa.UniqueConstraint('url_id'),
+                    if_not_exists=True
     )
     # ### end Alembic commands ###
 
